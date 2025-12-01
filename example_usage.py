@@ -1,34 +1,54 @@
 """
-Example usage of load_melodies and save_melodies functions.
+Example usage of the Melody Generator with Bigram model.
 """
-from models import load_melodies, save_melodies
+from models import (
+    load_melodies,
+    save_melodies,
+    preprocess_melodies,
+    build_bigram_model,
+    generate_melody
+)
 
-# Example 1: Load melodies from file
-print("Loading melodies from data/melodies.txt...")
-melodies = load_melodies('data/melodies.txt')
-print(f"Loaded {len(melodies)} melodies:")
-for i, melody in enumerate(melodies, 1):
-    print(f"  Melody {i}: {' '.join(melody)}")
 
-# Example 2: Create new melodies and save them
-print("\nCreating new melodies...")
-new_melodies = [
-    ['C', 'E', 'G', 'C'],
-    ['D', 'F', 'A'],
-    ['G', 'B', 'D', 'G']
-]
-save_melodies(new_melodies, 'data/generated_melodies.txt')
-print("Saved new melodies to data/generated_melodies.txt")
+def main():
+    """Main function demonstrating melody generation workflow."""
+    # Step 1: Load melodies from file
+    print("--- Step 1: Loading Data ---")
+    input_path = 'data/melodies.txt'
+    melodies = load_melodies(input_path)
+    
+    if not melodies:
+        print("No melodies found. Exiting.")
+        return
+    
+    print(f"Loaded {len(melodies)} melodies from {input_path}")
+    
+    # Step 2: Preprocess (Add ^ and $ tokens)
+    print("\n--- Step 2: Preprocessing ---")
+    processed_data = preprocess_melodies(melodies)
+    print("Added start (^) and end ($) tokens to melodies.")
+    
+    # Step 3: Train the Bigram Model
+    print("\n--- Step 3: Training Model ---")
+    model = build_bigram_model(processed_data)
+    print(f"Model trained. Learned {len(model)} unique notes/states.")
+    
+    # Step 4: Generate New Melodies
+    print("\n--- Step 4: Generating Music ---")
+    new_melodies = []
+    num_generated = 5
+    for i in range(num_generated):
+        new_song = generate_melody(model)
+        new_melodies.append(new_song)
+        print(f"Generated {i+1}: {' '.join(new_song)}")
+    
+    # Step 5: Save Results
+    print("\n--- Step 5: Saving Results ---")
+    output_path = 'data/generated_melodies.txt'
+    save_melodies(new_melodies, output_path)
+    print(f"Saved {len(new_melodies)} generated melodies to {output_path}")
 
-# Example 3: Load the saved melodies
-print("\nLoading saved melodies...")
-loaded = load_melodies('data/generated_melodies.txt')
-print(f"Loaded {len(loaded)} melodies:")
-for i, melody in enumerate(loaded, 1):
-    print(f"  Melody {i}: {' '.join(melody)}")
 
-# Example 4: Try loading a non-existent file (should show error message)
-print("\nTrying to load non-existent file...")
-result = load_melodies('data/nonexistent.txt')
-print(f"Result: {result}")
+if __name__ == "__main__":
+    main()
 
