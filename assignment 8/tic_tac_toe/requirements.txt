@@ -1,0 +1,4 @@
+# No external dependencies required for basic functionality
+# Optional: pandas for data analysis (if needed)
+pandas>=2.0.0
+
