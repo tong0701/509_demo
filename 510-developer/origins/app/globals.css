@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+:root {
+  --origins-cream: #f7f2ea;
+  --origins-paper: #faf6ef;
+  --origins-paper-deep: #efe6d8;
+  --origins-edge: #e2d8ca;
+  --origins-ink: #2c2419;
+  --origins-ink-soft: #5c5248;
+  --origins-ink-muted: #8a7f72;
+  --origins-ember: #c45c3e;
+  --origins-ember-deep: #8f3d28;
+  --origins-ember-soft: #f0d0c4;
+  --origins-rose: #a8464f;
+  --background: var(--origins-cream);
+  --foreground: var(--origins-ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-serif: var(--font-literata), ui-serif, Georgia, serif;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+.field-input {
+  @apply w-full rounded-xl border px-4 py-3 text-sm outline-none transition-shadow placeholder:text-[var(--origins-ink-muted)];
+  border-color: var(--origins-edge);
+  background-color: var(--origins-paper);
+  color: var(--origins-ink);
+}
+
+.field-input:focus {
+  border-color: var(--origins-ember);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--origins-ember) 35%, transparent);
+}
+
+.btn-primary {
+  @apply rounded-full px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors;
+  background-color: var(--origins-ember);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--origins-ember-deep);
+}
+
+.btn-ghost {
+  @apply rounded-full px-3 py-2 transition-colors;
+  color: var(--origins-ink-muted);
+}
+
+.btn-ghost:hover {
+  background-color: var(--origins-paper-deep);
+  color: var(--origins-ink);
+}

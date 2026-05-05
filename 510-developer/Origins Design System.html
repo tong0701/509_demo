@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Origins — Design System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  html, body, #root { margin: 0; padding: 0; height: 100%; background: #f0eee9; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="styles.jsx"></script>
+<script type="text/babel" src="style-guide.jsx"></script>
+<script type="text/babel" src="pages.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "pair": "default",
+  "density": "cozy",
+  "album": 1
+}/*EDITMODE-END*/;
+
+function App() {
+  const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+  // Apply tweaks to every artboard via data-attrs on the .origins-scope wrappers.
+  React.useEffect(() => {
+    document.querySelectorAll('.origins-scope').forEach((el) => {
+      el.setAttribute('data-pair', tweaks.pair);
+      el.setAttribute('data-density', tweaks.density);
+      el.setAttribute('data-album', String(tweaks.album));
+    });
+  }, [tweaks]);
+
+  return (
+    <>
+      <DesignCanvas>
+        <DCSection id="style" title="Style Guide" subtitle="Tokens, type, components, Tailwind config">
+          <DCArtboard id="colors" label="Colors" width={520} height={720}>
+            <ColorsArtboard />
+          </DCArtboard>
+          <DCArtboard id="type" label="Typography" width={520} height={720}>
+            <TypeArtboard />
+          </DCArtboard>
+          <DCArtboard id="components" label="Components" width={520} height={720}>
+            <ComponentsArtboard />
+          </DCArtboard>
+          <DCArtboard id="tailwind" label="Tailwind config" width={620} height={720}>
+            <TailwindArtboard />
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="pages" title="Pages" subtitle="The five views, desktop web · 1280×800 reference">
+          <DCArtboard id="auth" label="1 · Auth" width={1280} height={800}>
+            <AuthPage />
+          </DCArtboard>
+          <DCArtboard id="dashboard" label="2 · Dashboard" width={1280} height={800}>
+            <DashboardPage />
+          </DCArtboard>
+          <DCArtboard id="interview" label="3 · Interview session" width={1280} height={800}>
+            <InterviewPage />
+          </DCArtboard>
+          <DCArtboard id="timeline" label="4 · Timeline" width={1280} height={1100}>
+            <TimelinePage />
+          </DCArtboard>
+          <DCArtboard id="story" label="5 · Story detail" width={1280} height={1100}>
+            <StoryDetailPage />
+          </DCArtboard>
+        </DCSection>
+
+        <DCPostIt top={120} left={40} rotate={-3} width={200}>
+          Open any artboard fullscreen by clicking its label, or use the ↗ icon. ←/→ to flip through.
+        </DCPostIt>
+      </DesignCanvas>
+
+      <TweaksPanel>
+        <TweakSection label="Type pairing" />
+        <TweakRadio
+          label="Fonts"
+          value={tweaks.pair}
+          onChange={(v) => setTweak('pair', v)}
+          options={[
+            { value: 'default',   label: 'Lora+Inter' },
+            { value: 'warm',      label: 'Fraunces' },
+            { value: 'editorial', label: 'Cormorant' },
+          ]}
+        />
+        <TweakSection label="Density" />
+        <TweakRadio
+          label="Spacing"
+          value={tweaks.density}
+          onChange={(v) => setTweak('density', v)}
+          options={[
+            { value: 'compact', label: 'Compact' },
+            { value: 'cozy',    label: 'Cozy' },
+            { value: 'roomy',   label: 'Roomy' },
+          ]}
+        />
+        <TweakSection label="Album-metaphor intensity" />
+        <TweakRadio
+          label="Style"
+          value={String(tweaks.album)}
+          onChange={(v) => setTweak('album', Number(v))}
+          options={[
+            { value: '0', label: 'Clean' },
+            { value: '1', label: 'Subtle' },
+            { value: '2', label: 'Heavy' },
+          ]}
+        />
+      </TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
