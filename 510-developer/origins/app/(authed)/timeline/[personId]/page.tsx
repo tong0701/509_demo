@@ -1,11 +1,18 @@
 import { getPersonForCurrentUser } from "@/lib/data/persons";
 import { listStoriesForPerson } from "@/lib/data/stories";
-import { signStoragePaths } from "@/lib/storage/sign-urls";
-import { splitAndSortStories } from "@/lib/timeline/sort";
+import { demoStoryPhotoByOrder } from "@/lib/demo/media";
+import { resolveStoryPhotoUrls } from "@/lib/storage/resolve-photo";
+import { parseStoryYear, splitAndSortStories } from "@/lib/timeline/sort";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 type Props = { params: Promise<{ personId: string }> };
+
+function storyAge(birthYear: number | null, storyYear: number | null) {
+  if (birthYear == null || storyYear == null) return null;
+  return storyYear - birthYear;
+}
 
 export default async function TimelinePage({ params }: Props) {
   const { personId } = await params;
@@ -13,41 +20,75 @@ export default async function TimelinePage({ params }: Props) {
   if (!person) notFound();
   const stories = await listStoriesForPerson(personId);
   const { dated, undated } = splitAndSortStories(stories);
+  const personName = person.name;
 
-  async function thumb(path: string | null) {
-    if (!path) return null;
-    return (await signStoragePaths("story-photos", [path]))[0];
+  async function thumb(path: string | null, orderIndex: number) {
+    if (path) {
+      const resolved = (await resolveStoryPhotoUrls([path]))[0];
+      if (resolved) return resolved;
+    }
+    return demoStoryPhotoByOrder(personName, orderIndex);
   }
 
   const datedRows = await Promise.all(
-    dated.map(async (s) => ({ s, thumb: await thumb(s.photo_urls?.[0] ?? null) })),
+    dated.map(async (s) => ({ s, thumb: await thumb(s.photo_urls?.[0] ?? null, s.order_index) })),
   );
   const undatedRows = await Promise.all(
-    undated.map(async (s) => ({ s, thumb: await thumb(s.photo_urls?.[0] ?? null) })),
+    undated.map(async (s) => ({ s, thumb: await thumb(s.photo_urls?.[0] ?? null, s.order_index) })),
   );
 
-  const Item = ({ id, question, response, estimated, created, theme, t }: any) => (
-    <article className="overflow-hidden rounded-2xl border border-[var(--origins-edge)] bg-[var(--origins-paper)] shadow-sm">
-      <div className="flex flex-col gap-4 p-5 sm:flex-row">
-        {t ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={t} alt="" className="h-28 w-full rounded-xl object-cover sm:h-full sm:w-36" />
-        ) : null}
-        <div className="min-w-0 flex-1 space-y-2">
-          <div className="flex flex-wrap gap-2 text-xs text-[var(--origins-ink-muted)]">
-            <span className="rounded-full bg-[var(--origins-paper-deep)] px-2 py-0.5 font-mono">
-              {estimated ?? created}
-            </span>
-            {theme ? (
-              <span className="rounded-full bg-[var(--origins-ember-soft)] px-2 py-0.5 font-mono text-[var(--origins-ember-deep)]">
-                {theme}
-              </span>
-            ) : null}
+  const subtitle = [person.relationship, person.birth_year ? `b. ${person.birth_year}` : null]
+    .filter(Boolean)
+    .join(" · ");
+
+  const Entry = ({
+    yearLabel,
+    age,
+    theme,
+    question,
+    response,
+    thumbUrl,
+    storyId,
+    hasAudio,
+    photoCount,
+  }: {
+    yearLabel: string;
+    age: number | null;
+    theme: string | null;
+    question: string;
+    response: string;
+    thumbUrl: string | null;
+    storyId: string;
+    hasAudio: boolean;
+    photoCount: number;
+  }) => (
+    <article className="relative mb-12 grid grid-cols-[120px_1fr] gap-8">
+      <div className="pt-1 text-right">
+        <div className="display text-[26px] text-[var(--origins-ember-deep)]">{yearLabel}</div>
+        {age != null ? <p className="muted mt-1 text-xs">age {age}</p> : null}
+      </div>
+      <div className="relative border-l border-[var(--origins-edge)] pl-8">
+        <span className="absolute -left-[5px] top-2 h-[9px] w-[9px] rounded-full border-2 border-[var(--origins-paper)] bg-[var(--origins-ember)]" />
+        {theme ? <p className="ai-question mb-2">{theme}</p> : null}
+        <h2 className="display mb-2 text-[22px] leading-snug text-[var(--origins-ink)]">{question}</h2>
+        <p className="font-serif mb-4 max-w-[480px] text-[15px] leading-relaxed text-[var(--origins-ink-soft)]">
+          {response || "(Audio or photos)"}
+        </p>
+        {thumbUrl ? (
+          <div className={`photo photo-rotate-1 mb-3 inline-block`}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={thumbUrl} alt="" className="photo-inner block h-[88px] w-[120px] object-cover" />
           </div>
-          <p className="font-mono text-[var(--origins-ink)]">{question}</p>
-          <p className="line-clamp-3 text-sm text-[var(--origins-ink-soft)]">{response || "(Audio or photos)"}</p>
-          <Link href={`/story/${id}`} className="text-sm font-semibold text-[var(--origins-ember)] hover:underline">
-            Open full story
+        ) : null}
+        <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--origins-ink-muted)]">
+          {hasAudio ? <span>♪ audio</span> : null}
+          {photoCount > 0 ? (
+            <span>
+              {photoCount} photo{photoCount === 1 ? "" : "s"}
+            </span>
+          ) : null}
+          <Link href={`/story/${storyId}`} className="font-medium text-[var(--origins-ember-deep)] hover:underline">
+            Read full story →
           </Link>
         </div>
       </div>
@@ -55,58 +96,85 @@ export default async function TimelinePage({ params }: Props) {
   );
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
-      <header>
-        <h1 className="font-display text-3xl text-[var(--origins-ink)]">{person.name}</h1>
-        <p className="mt-2 text-sm text-[var(--origins-ink-muted)]">Chronological timeline with undated stories grouped at the bottom.</p>
+    <div className="mx-auto max-w-[920px] px-8 pb-16 pt-10">
+      <header className="mb-10 flex flex-wrap items-end gap-7">
+        <div className="photo photo-rotate-1 shrink-0">
+          <div className="photo-inner relative h-[170px] w-[140px] overflow-hidden">
+            {person.photo_url ? (
+              <Image
+                src={person.photo_url}
+                alt={`${person.name} portrait`}
+                fill
+                className="object-cover"
+                sizes="140px"
+                unoptimized
+              />
+            ) : null}
+          </div>
+        </div>
+        <div className="min-w-0 flex-1 pb-2">
+          <p className="ai-question mb-2">Timeline</p>
+          <h1 className="display text-[40px] text-[var(--origins-ink)]">{person.name}</h1>
+          {subtitle ? (
+            <p className="font-serif mt-2 text-[17px] italic text-[var(--origins-ink-soft)]">{subtitle}</p>
+          ) : null}
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link href={`/interview/${person.id}`} className="btn-primary !text-[13px]">
+              Continue interview
+            </Link>
+            <Link href="/dashboard" className="btn-secondary !text-[13px]">
+              Dashboard
+            </Link>
+          </div>
+        </div>
       </header>
 
       {datedRows.length > 0 ? (
-        <ol className="relative space-y-6 border-l border-[var(--origins-edge)] pl-8">
-          {datedRows.map(({ s, thumb }) => (
-            <li key={s.id} className="relative">
-              <span className="absolute -left-[29px] mt-1.5 h-3 w-3 rounded-full bg-[var(--origins-ember)] ring-4 ring-[var(--origins-cream)]" />
-              <Item
-                id={s.id}
+        <section>
+          {datedRows.map(({ s, thumb }) => {
+            const year = parseStoryYear(s.estimated_date);
+            return (
+              <Entry
+                key={s.id}
+                yearLabel={year != null ? String(year) : "—"}
+                age={storyAge(person.birth_year, year)}
+                theme={s.theme}
                 question={s.question_text}
                 response={s.response_text}
-                estimated={s.estimated_date}
-                created={new Date(s.created_at).toLocaleDateString()}
-                theme={s.theme}
-                t={thumb}
+                thumbUrl={thumb}
+                storyId={s.id}
+                hasAudio={Boolean(s.audio_url)}
+                photoCount={s.photo_urls?.length ?? 0}
               />
-            </li>
-          ))}
-        </ol>
+            );
+          })}
+        </section>
       ) : null}
 
       {undatedRows.length > 0 ? (
-        <section className="space-y-4">
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-[var(--origins-ink-muted)]">—</span>
-            <h2 className="font-display text-xl text-[var(--origins-ink)]">Undated stories · Sorted by capture date</h2>
-          </div>
-          <div className="space-y-4">
-            {undatedRows.map(({ s, thumb }) => (
-              <Item
-                key={s.id}
-                id={s.id}
-                question={s.question_text}
-                response={s.response_text}
-                estimated={null}
-                created={new Date(s.created_at).toLocaleDateString()}
-                theme={s.theme}
-                t={thumb}
-              />
-            ))}
-          </div>
+        <section className="mt-4 border-t border-[var(--origins-edge)] pt-10">
+          <p className="ai-question mb-8">Undated · sorted by capture date</p>
+          {undatedRows.map(({ s, thumb }) => (
+            <Entry
+              key={s.id}
+              yearLabel="—"
+              age={null}
+              theme={s.theme}
+              question={s.question_text}
+              response={s.response_text}
+              thumbUrl={thumb}
+              storyId={s.id}
+              hasAudio={Boolean(s.audio_url)}
+              photoCount={s.photo_urls?.length ?? 0}
+            />
+          ))}
         </section>
       ) : null}
 
       {datedRows.length === 0 && undatedRows.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-[var(--origins-edge)] bg-[var(--origins-paper)] px-8 py-12 text-center">
+        <div className="rounded-md border border-dashed border-[var(--origins-edge)] px-8 py-12 text-center">
           <p className="text-[var(--origins-ink)]">No stories yet.</p>
-          <Link href={`/interview/${person.id}`} className="mt-3 inline-block text-sm font-semibold text-[var(--origins-ember)] underline">
+          <Link href={`/interview/${person.id}`} className="btn-primary mt-4 inline-flex !text-sm">
             Start an interview
           </Link>
         </div>

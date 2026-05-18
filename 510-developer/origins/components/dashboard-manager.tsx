@@ -202,61 +202,76 @@ export function DashboardManager({ initialPeople, userId }: Props) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="font-display text-xl text-[var(--origins-ink)]">Your people</h2>
-        <button type="button" className="btn-primary" onClick={openCreate}>
-          Add someone
+    <div className="space-y-9">
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <p className="ai-question mb-2">Your people</p>
+          <h2 className="display text-[32px] text-[var(--origins-ink)]">Whose stories will you keep?</h2>
+        </div>
+        <button type="button" className="btn-primary shrink-0" onClick={openCreate}>
+          + Add someone
         </button>
       </div>
 
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid gap-9 sm:grid-cols-2 lg:grid-cols-3">
         {people.map((p, idx) => (
-          <li key={p.id} className="group relative overflow-hidden rounded-2xl border border-[var(--origins-edge)] bg-[var(--origins-paper)] p-4 shadow-sm">
-            <div className="absolute right-3 top-3 z-10">
-              <button className="btn-ghost h-8 w-8" onClick={() => setOpenMenu(openMenu === p.id ? null : p.id)}>
+          <li key={p.id} className="group relative">
+            <div className="absolute right-0 top-0 z-10">
+              <button type="button" className="btn-ghost !px-2 !py-1" aria-label="More actions" onClick={() => setOpenMenu(openMenu === p.id ? null : p.id)}>
                 ⋯
               </button>
               {openMenu === p.id ? (
-                <div className="absolute right-0 mt-1 w-40 rounded-xl border border-[var(--origins-edge)] bg-[var(--origins-paper)] p-1 shadow">
-                  <button className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-[var(--origins-paper-deep)]" onClick={() => { setOpenMenu(null); openEdit(p); }}>
+                <div className="absolute right-0 mt-1 w-44 rounded-md border border-[var(--origins-edge)] bg-[var(--origins-paper)] p-1 shadow-sm">
+                  <button type="button" className="block w-full rounded px-3 py-2 text-left text-sm hover:bg-[var(--origins-paper-deep)]" onClick={() => { setOpenMenu(null); openEdit(p); }}>
                     Edit profile
                   </button>
-                  <button className="block w-full rounded-lg px-3 py-2 text-left text-sm text-[var(--origins-rose)] hover:bg-[var(--origins-paper-deep)]" onClick={() => { setOpenMenu(null); void promptDelete(p); }}>
+                  <button type="button" className="block w-full rounded px-3 py-2 text-left text-sm text-[var(--origins-rose)] hover:bg-[var(--origins-paper-deep)]" onClick={() => { setOpenMenu(null); void promptDelete(p); }}>
                     Delete everything
                   </button>
                 </div>
               ) : null}
             </div>
 
-            <div className={`photo-frame relative mb-3 aspect-[4/3] overflow-hidden rounded-xl bg-[var(--origins-paper-deep)] ${idx % 2 ? "rotate-[1deg]" : "-rotate-[1deg]"}`}>
-              {p.photo_url ? (
-                <Image src={p.photo_url} alt={`${p.name} portrait`} fill className="object-cover" />
-              ) : (
-                <div className="h-full w-full bg-[repeating-linear-gradient(45deg,#e6ddcf,#e6ddcf_10px,#f3ebdf_10px,#f3ebdf_20px)]">
-                  <div className="invisible absolute inset-0 flex items-center justify-center text-sm text-[var(--origins-ink-soft)] group-hover:visible">
+            <div className={`photo photo-rotate-${(idx % 3) + 1} mb-3.5 block w-full`}>
+              <div className="photo-inner relative min-h-[220px] w-full overflow-hidden">
+                {p.photo_url ? (
+                  <Image
+                    src={p.photo_url}
+                    alt={`${p.name} portrait`}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    unoptimized
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    className="flex h-full min-h-[220px] w-full items-center justify-center text-sm text-[var(--origins-ink-muted)] opacity-0 transition-opacity group-hover:opacity-100"
+                    onClick={() => openEdit(p)}
+                  >
                     + Add photo
-                  </div>
-                </div>
-              )}
+                  </button>
+                )}
+              </div>
             </div>
 
-            <h3 className="font-display text-xl text-[var(--origins-ink)]">{p.name}</h3>
-            <p className="text-sm text-[var(--origins-ink-muted)]">
-              {[p.relationship, p.birth_year ? `b. ${p.birth_year}` : null].filter(Boolean).join(" · ")}
-            </p>
+            <h3 className="display text-xl text-[var(--origins-ink)]">{p.name}</h3>
+            {(p.relationship || p.birth_year) ? (
+              <p className="font-serif text-sm italic text-[var(--origins-ink-soft)]">
+                {[p.relationship, p.birth_year ? `b. ${p.birth_year}` : null].filter(Boolean).join(" · ")}
+              </p>
+            ) : null}
             <div className="mt-4 flex flex-wrap gap-2">
               <Link href={`/interview/${p.id}`} className="btn-primary !px-4 !py-2 !text-xs">
                 Interview
               </Link>
-              <Link href={`/timeline/${p.id}`} className="rounded-full border border-[var(--origins-edge)] bg-[var(--origins-cream)] px-4 py-2 text-xs font-semibold text-[var(--origins-ink)]">
+              <Link href={`/timeline/${p.id}`} className="btn-secondary !px-4 !py-2 !text-xs">
                 Timeline
               </Link>
             </div>
           </li>
         ))}
       </ul>
-
       <Dialog
         open={Boolean(editing)}
         title={editing?.id ? "Edit profile" : "Add someone"}

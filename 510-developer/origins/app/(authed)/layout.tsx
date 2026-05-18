@@ -22,9 +22,9 @@ export default async function AuthedLayout({ children }: { children: React.React
 
   return (
     <ToastProvider>
-      <div className="flex min-h-full flex-1 flex-col bg-[var(--origins-cream)]">
+      <div className="flex min-h-full flex-1 flex-col bg-[var(--origins-paper)]">
         <AuthedNav email={user.email ?? null} initials={initials} />
-        <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-10 sm:px-10">{children}</main>
+        <main className="flex-1">{children}</main>
       </div>
     </ToastProvider>
   );

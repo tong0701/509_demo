@@ -1,3 +1,9 @@
+# Origins — Next.js (canonical app)
+
+**This folder is the maintained Origins product.** Streamlit prototypes (`final-project-GIX-Luyao/gate1*`) are **legacy / archived**—see the [project README](../final-project-GIX-Luyao/README.md) *Implementation status* table on GitHub.
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

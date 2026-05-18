@@ -63,30 +63,24 @@ export function AuthForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex w-full max-w-sm flex-col gap-4">
-      {(errorParam === "auth" ||
-        errorParam === "config" ||
-        message) && (
+    <form onSubmit={onSubmit} className="flex w-full flex-col gap-4">
+      {(errorParam === "auth" || errorParam === "config" || message) && (
         <p
-          className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950"
+          className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950"
           role="status"
         >
           {errorParam === "config"
-            ? "Supabase URL and key are missing. In origins/.env.local set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (sb_publishable_…) or NEXT_PUBLIC_SUPABASE_ANON_KEY (legacy eyJ…), then restart npm run dev."
+            ? "Supabase URL and key are missing. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (or ANON_KEY) in .env.local, then restart npm run dev."
             : errorParam === "auth"
               ? "Something went wrong signing you in. Try again."
               : message}
         </p>
       )}
 
-      <div className="flex rounded-full bg-[var(--origins-paper-deep)] p-1 text-sm font-medium">
+      <div className="flex gap-2">
         <button
           type="button"
-          className={`flex-1 rounded-full px-3 py-2 transition-colors ${
-            mode === "signin"
-              ? "bg-[var(--origins-cream)] text-[var(--origins-ink)] shadow-sm"
-              : "text-[var(--origins-ink-muted)]"
-          }`}
+          className={mode === "signin" ? "btn btn-secondary flex-1" : "btn btn-ghost flex-1"}
           onClick={() => {
             setMode("signin");
             setMessage(null);
@@ -96,11 +90,7 @@ export function AuthForm() {
         </button>
         <button
           type="button"
-          className={`flex-1 rounded-full px-3 py-2 transition-colors ${
-            mode === "signup"
-              ? "bg-[var(--origins-cream)] text-[var(--origins-ink)] shadow-sm"
-              : "text-[var(--origins-ink-muted)]"
-          }`}
+          className={mode === "signup" ? "btn btn-secondary flex-1" : "btn btn-ghost flex-1"}
           onClick={() => {
             setMode("signup");
             setMessage(null);
@@ -111,7 +101,7 @@ export function AuthForm() {
       </div>
 
       <div>
-        <label htmlFor="email" className="mb-1 block text-xs font-medium uppercase tracking-wide text-[var(--origins-ink-muted)]">
+        <label htmlFor="email" className="label">
           Email
         </label>
         <input
@@ -127,7 +117,7 @@ export function AuthForm() {
       </div>
 
       <div>
-        <label htmlFor="password" className="mb-1 block text-xs font-medium uppercase tracking-wide text-[var(--origins-ink-muted)]">
+        <label htmlFor="password" className="label">
           Password
         </label>
         <input
@@ -141,18 +131,38 @@ export function AuthForm() {
           onChange={(e) => setPassword(e.target.value)}
           className="field-input"
         />
-        <p className="mt-1 text-xs text-[var(--origins-ink-muted)]">
-          At least {MIN_PASSWORD} characters.
-        </p>
+        <p className="mt-1 text-xs text-[var(--origins-ink-muted)]">At least {MIN_PASSWORD} characters.</p>
       </div>
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="btn-primary mt-2 w-full disabled:opacity-60"
-      >
+      <button type="submit" disabled={loading} className="btn-primary mt-2 w-full">
         {loading ? "Working…" : mode === "signup" ? "Create account" : "Sign in"}
       </button>
+
+      <p className="text-center text-[13px] text-[var(--origins-ink-soft)]">
+        {mode === "signin" ? (
+          <>
+            New here?{" "}
+            <button
+              type="button"
+              className="font-medium text-[var(--origins-ember-deep)]"
+              onClick={() => setMode("signup")}
+            >
+              Create an account
+            </button>
+          </>
+        ) : (
+          <>
+            Already have an account?{" "}
+            <button
+              type="button"
+              className="font-medium text-[var(--origins-ember-deep)]"
+              onClick={() => setMode("signin")}
+            >
+              Sign in
+            </button>
+          </>
+        )}
+      </p>
     </form>
   );
 }

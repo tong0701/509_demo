@@ -172,94 +172,119 @@ export function InterviewSession({ person }: Props) {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
-      <header>
-        <p className="text-xs font-medium uppercase tracking-wide text-[var(--origins-ink-muted)]">Interview</p>
-        <h1 className="font-display mt-1 text-3xl text-[var(--origins-ink)]">{person.name}</h1>
-      </header>
+    <div className="flex min-h-[calc(100vh-73px)] flex-col">
+      <div className="page-interview flex flex-1 flex-col items-center justify-center py-8">
+        {hintNoAi ? (
+          <p className="mb-6 w-full rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+            Add <code className="rounded bg-white/70 px-1">OPENAI_API_KEY</code> to{" "}
+            <code className="rounded bg-white/70 px-1">.env.local</code> for richer question generation.
+          </p>
+        ) : null}
+        {banner ? (
+          <p className="mb-6 w-full rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">{banner}</p>
+        ) : null}
 
-      {hintNoAi ? (
-        <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-          Add <code className="rounded bg-white/70 px-1">OPENAI_API_KEY</code> to{" "}
-          <code className="rounded bg-white/70 px-1">.env.local</code> for richer question generation.
-        </p>
-      ) : null}
-      {banner ? (
-        <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">{banner}</p>
-      ) : null}
+        <p className="ai-question mb-6 text-center">Interviewing {person.name}</p>
 
-      <section className="rounded-2xl border border-[var(--origins-edge)] bg-[var(--origins-paper)] p-6 shadow-sm">
-        <h2 className="font-display text-lg text-[var(--origins-ink)]">Question</h2>
         {loadingQuestion ? (
-          <div className="mt-3 h-6 w-4/5 animate-pulse rounded bg-[var(--origins-paper-deep)]" />
+          <div className="mb-12 h-12 w-full max-w-lg animate-pulse rounded bg-[var(--origins-paper-deep)]" />
         ) : (
-          <p
-            className={`mt-3 font-mono text-lg leading-relaxed text-[var(--origins-ink)] transition-opacity duration-200 ${questionVisible ? "opacity-100" : "opacity-0"}`}
+          <h1
+            className={`display mb-3 text-center text-[clamp(1.75rem,4vw,2.25rem)] leading-snug text-[var(--origins-ink)] transition-opacity duration-200 ${questionVisible ? "opacity-100" : "opacity-0"}`}
           >
             {questionText}
-          </p>
+          </h1>
         )}
-      </section>
 
-      <form onSubmit={onSubmit} className="space-y-6">
-        <section className="rounded-2xl border border-[var(--origins-edge)] bg-[var(--origins-paper)] p-6 shadow-sm">
-          <textarea
-            value={responseText}
-            onChange={(e) => setResponseText(e.target.value)}
-            rows={6}
-            placeholder="Share what you remember..."
-            className="field-input resize-y"
-          />
-          <div className="mt-4 flex flex-wrap gap-3">
-            {recordingState === "recording" ? (
-              <button type="button" className="rounded-full bg-red-700 px-5 py-2.5 text-sm font-semibold text-white" onClick={stopRecording}>
-                Stop recording
-              </button>
-            ) : (
-              <button type="button" className="rounded-full border border-[var(--origins-edge)] bg-[var(--origins-cream)] px-5 py-2.5 text-sm font-semibold text-[var(--origins-ink)]" onClick={startRecording}>
-                Record audio
-              </button>
-            )}
-            {audioBlob ? (
-              <span className="self-center text-xs text-[var(--origins-ink-muted)]">
-                Clip ready ({Math.round(audioBlob.size / 1024)} KB)
-              </span>
-            ) : null}
-          </div>
-          <div className="mt-5">
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              className="text-sm text-[var(--origins-ink-muted)] file:mr-3 file:rounded-full file:border-0 file:bg-[var(--origins-ember-soft)] file:px-4 file:py-2 file:text-xs file:font-semibold file:text-[var(--origins-ember-deep)]"
-              onChange={(e) => setPhotos(Array.from(e.target.files ?? []))}
+        <p className="font-serif mb-10 text-center text-base italic text-[var(--origins-ink-soft)]">
+          Take your time — type, record, or add photos that help tell the story.
+        </p>
+
+        <form onSubmit={onSubmit} className="w-full space-y-6">
+          <section className="rounded-[10px] border border-[var(--origins-edge)] bg-[var(--origins-paper-deep)] p-7">
+            <div className="mb-5 flex flex-wrap items-center gap-4">
+              {recordingState === "recording" ? (
+                <button type="button" className="btn-danger !text-sm" onClick={stopRecording}>
+                  Stop recording
+                </button>
+              ) : (
+                <button type="button" className="btn-secondary !text-sm" onClick={startRecording}>
+                  Record audio
+                </button>
+              )}
+              {audioBlob ? (
+                <span className="font-mono text-xs text-[var(--origins-ink-muted)]">
+                  Clip ready ({Math.round(audioBlob.size / 1024)} KB)
+                </span>
+              ) : recordingState === "recording" ? (
+                <span className="text-sm font-medium text-[var(--origins-rose)]">Recording…</span>
+              ) : null}
+            </div>
+
+            <hr className="rule mb-4" />
+
+            <p className="soft mb-2 text-xs">Or type your answer:</p>
+            <textarea
+              value={responseText}
+              onChange={(e) => setResponseText(e.target.value)}
+              rows={4}
+              placeholder="There was an old mango tree behind our house…"
+              className="field-input field-serif resize-none"
             />
-          </div>
-        </section>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <button type="submit" disabled={submitting || loadingQuestion || !questionText} className="btn-primary disabled:opacity-50">
-            {submitting ? "Saving..." : "Save answer & next question"}
-          </button>
-          <button
-            type="button"
-            disabled={skipLoading || loadingQuestion}
-            className="btn-ghost text-sm font-semibold disabled:opacity-50"
-            onClick={async () => {
-              await loadQuestion(true);
-              setConsecutiveSkips((n) => n + 1);
-            }}
-          >
-            {skipLoading ? "Skipping..." : "Skip this question"}
-          </button>
+            <div className="mt-5">
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="text-sm text-[var(--origins-ink-muted)] file:mr-3 file:rounded-md file:border-0 file:bg-[var(--origins-ember-soft)] file:px-4 file:py-2 file:text-xs file:font-semibold file:text-[var(--origins-ember-deep)]"
+                onChange={(e) => setPhotos(Array.from(e.target.files ?? []))}
+              />
+              {photos.length > 0 ? (
+                <p className="mt-2 font-mono text-xs text-[var(--origins-ink-muted)]">
+                  {photos.length} photo{photos.length === 1 ? "" : "s"} selected
+                </p>
+              ) : null}
+            </div>
+          </section>
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <button
+              type="button"
+              disabled={skipLoading || loadingQuestion}
+              className="btn-ghost !px-0 disabled:opacity-50"
+              onClick={async () => {
+                await loadQuestion(true);
+                setConsecutiveSkips((n) => n + 1);
+              }}
+            >
+              {skipLoading ? "Skipping…" : "← Skip this one"}
+            </button>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/dashboard" className="btn-secondary !text-sm">
+                Save & pause
+              </Link>
+              <button
+                type="submit"
+                disabled={submitting || loadingQuestion || !questionText}
+                className="btn-primary disabled:opacity-50"
+              >
+                {submitting ? "Saving…" : "Save & continue →"}
+              </button>
+            </div>
+          </div>
+
           {consecutiveSkips >= 3 ? (
-            <p className="text-sm text-[var(--origins-ink-muted)]">
-              Hard to find one that fits? You can also pause and come back later.{" "}
-              <Link href="/dashboard" className="underline">Dashboard</Link>
+            <p className="text-center text-sm text-[var(--origins-ink-muted)]">
+              Hard to find one that fits? You can pause and come back later from the{" "}
+              <Link href="/dashboard" className="text-[var(--origins-ember-deep)] underline">
+                dashboard
+              </Link>
+              .
             </p>
           ) : null}
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }
