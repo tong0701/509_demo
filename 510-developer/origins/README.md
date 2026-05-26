@@ -1,42 +1,48 @@
-# Origins — Next.js (canonical app)
+# Origins
 
-**This folder is the maintained Origins product.** Streamlit prototypes (`final-project-GIX-Luyao/gate1*`) are **legacy / archived**—see the [project README](../final-project-GIX-Luyao/README.md) *Implementation status* table on GitHub.
+Next.js app for capturing family stories (Supabase auth + storage, optional OpenAI interview).
 
----
+**Live:** https://510-finalproject-origin.vercel.app/
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+**Deploy repo:** [tong0701/510_finalproject_Origin](https://github.com/tong0701/510_finalproject_Origin) · branch `510_Origin_deploy`
 
-## Getting Started
+**Course repo:** [danzelphotos-tech/final-project-codebase-danzelphotos-tech](https://github.com/danzelphotos-tech/final-project-codebase-danzelphotos-tech/tree/dev) · folder **`gate2-3/`**
 
-First, run the development server:
+## Local
 
 ```bash
+npm install
+cp .env.example .env.local   # or paste keys in lib/public-config.ts
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Config
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Either `.env.local`:
 
-## Learn More
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (or `NEXT_PUBLIC_SUPABASE_ANON_KEY`)
+- `OPENAI_API_KEY` (optional)
 
-To learn more about Next.js, take a look at the following resources:
+Or edit `lib/public-config.ts` (inline URL/key for Vercel without env UI).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Run `supabase/schema.sql` in your Supabase SQL editor once.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Environment Security
 
-## Deploy on Vercel
+- Keep `.env.local` local-only and never commit real secrets.
+- Use `.env.example` placeholders as a template for required variables.
+- If a key is exposed, rotate it immediately in Supabase/OpenAI dashboards.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Vercel
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Import this repo, branch **`510_Origin_deploy`**
+- **Root Directory:** `.` (repo root is the Next app)
+- Build: `npm run build` · Start: `npm start`
+- After deploy, set Supabase Auth redirect URLs to your Vercel domain + `/auth/callback`
+
+## Demo
+
+New accounts get a built-in **Alex Rivera** profile with sample stories and photos under `public/demo/` (no OpenAI key required).
